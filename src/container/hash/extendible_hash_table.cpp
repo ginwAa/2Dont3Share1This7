@@ -87,17 +87,40 @@ ExtendibleHashTable<K, V>::Bucket::Bucket(size_t array_size, int depth) : size_(
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Find(const K &key, V &value) -> bool {
-  UNREACHABLE("not implemented");
+  auto iter = list_.begin();
+  while (iter != list_.end()) {
+    if (iter->first == key) {
+      value = iter->second;
+      return true;
+    }
+    ++iter;
+  }
+
+  return false;
 }
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Remove(const K &key) -> bool {
-  UNREACHABLE("not implemented");
+  auto iter = list_.begin();
+  while (iter != list_.end()) {
+    if (iter->first == key) {
+      list_.erase(iter);
+      return true;
+    }
+    ++iter;
+  }
+
+  return false;
 }
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Insert(const K &key, const V &value) -> bool {
-  UNREACHABLE("not implemented");
+  if (IsFull()) {
+    return false;
+  }
+
+  list_.emplace_back(key, value);
+  return true;
 }
 
 template class ExtendibleHashTable<page_id_t, Page *>;
