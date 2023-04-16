@@ -23,19 +23,6 @@
 
 namespace bustub {
 
-enum class AccessType { Unknown = 0, Get, Scan };
-
-class LRUKNode {
- private:
-  /** History of last seen K timestamps of this page. Least recent timestamp stored in front. */
-  // Remove maybe_unused if you start using them. Feel free to change the member variables as you want.
-
-  [[maybe_unused]] std::list<size_t> history_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] frame_id_t fid_;
-  [[maybe_unused]] bool is_evictable_{false};
-};
-
 /**
  * LRUKReplacer implements the LRU-k replacement policy.
  *
@@ -44,7 +31,7 @@ class LRUKNode {
  * current timestamp and the timestamp of kth previous access.
  *
  * A frame with less than k historical references is given
- * +inf as its backward k-distance. When multipe frames have +inf backward k-distance,
+ * +inf as its backward k-distance. When multiple frames have +inf backward k-distance,
  * classical LRU algorithm is used to choose victim.
  */
 class LRUKReplacer {
@@ -74,8 +61,8 @@ class LRUKReplacer {
    * that are marked as 'evictable' are candidates for eviction.
    *
    * A frame with less than k historical references is given +inf as its backward k-distance.
-   * If multiple frames have inf backward k-distance, then evict frame with earliest timestamp
-   * based on LRU.
+   * If multiple frames have inf backward k-distance, then evict the frame with the earliest
+   * timestamp overall.
    *
    * Successful eviction of a frame should decrement the size of replacer and remove the frame's
    * access history.
@@ -95,10 +82,8 @@ class LRUKReplacer {
    * also use BUSTUB_ASSERT to abort the process if frame id is invalid.
    *
    * @param frame_id id of frame that received a new access.
-   * @param access_type type of access that was received. This parameter is only needed for
-   * leaderboard tests.
    */
-  void RecordAccess(frame_id_t frame_id, AccessType access_type = AccessType::Unknown);
+  void RecordAccess(frame_id_t frame_id);
 
   /**
    * TODO(P1): Add implementation
@@ -150,12 +135,11 @@ class LRUKReplacer {
  private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.
-  [[maybe_unused]] std::unordered_map<frame_id_t, LRUKNode> node_store_;
   [[maybe_unused]] size_t current_timestamp_{0};
   [[maybe_unused]] size_t curr_size_{0};
   [[maybe_unused]] size_t replacer_size_;
   [[maybe_unused]] size_t k_;
-  [[maybe_unused]] std::mutex latch_;
+  std::mutex latch_;
 };
 
 }  // namespace bustub

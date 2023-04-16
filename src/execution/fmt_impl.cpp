@@ -7,7 +7,6 @@
 #include "execution/expressions/abstract_expression.h"
 #include "execution/plans/abstract_plan.h"
 #include "execution/plans/aggregation_plan.h"
-#include "execution/plans/hash_join_plan.h"
 #include "execution/plans/limit_plan.h"
 #include "execution/plans/projection_plan.h"
 #include "execution/plans/sort_plan.h"
@@ -34,11 +33,6 @@ auto AbstractPlanNode::ChildrenToString(int indent, bool with_schema) const -> s
 
 auto AggregationPlanNode::PlanNodeToString() const -> std::string {
   return fmt::format("Agg {{ types={}, aggregates={}, group_by={} }}", agg_types_, aggregates_, group_bys_);
-}
-
-auto HashJoinPlanNode::PlanNodeToString() const -> std::string {
-  return fmt::format("HashJoin {{ type={}, left_key={}, right_key={} }}", join_type_, left_key_expressions_,
-                     right_key_expressions_);
 }
 
 auto ProjectionPlanNode::PlanNodeToString() const -> std::string {

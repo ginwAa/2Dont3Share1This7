@@ -91,8 +91,10 @@ TEST(LRUKReplacerTest, DISABLED_SampleTest) {
   ASSERT_EQ(value, 1);
   ASSERT_EQ(0, lru_replacer.Size());
 
-  // This operation should not modify size
+  // These operations should not modify size
   ASSERT_EQ(false, lru_replacer.Evict(&value));
+  ASSERT_EQ(0, lru_replacer.Size());
+  lru_replacer.Remove(1);
   ASSERT_EQ(0, lru_replacer.Size());
 }
 }  // namespace bustub

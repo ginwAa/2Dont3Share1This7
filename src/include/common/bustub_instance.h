@@ -25,7 +25,6 @@
 #include "catalog/catalog.h"
 #include "common/config.h"
 #include "common/util/string_util.h"
-#include "execution/check_options.h"
 #include "libfort/lib/fort.hpp"
 #include "type/value.h"
 
@@ -41,12 +40,6 @@ class LogManager;
 class CheckpointManager;
 class Catalog;
 class ExecutionEngine;
-
-class CreateStatement;
-class IndexStatement;
-class VariableSetStatement;
-class VariableShowStatement;
-class ExplainStatement;
 
 class ResultWriter {
  public:
@@ -215,7 +208,7 @@ class BustubInstance {
   /**
    * Get the executor context from the BusTub instance.
    */
-  auto MakeExecutorContext(Transaction *txn, bool is_modify) -> std::unique_ptr<ExecutorContext>;
+  auto MakeExecutorContext(Transaction *txn) -> std::unique_ptr<ExecutorContext>;
 
  public:
   explicit BustubInstance(const std::string &db_file_name);
@@ -227,14 +220,12 @@ class BustubInstance {
   /**
    * Execute a SQL query in the BusTub instance.
    */
-  auto ExecuteSql(const std::string &sql, ResultWriter &writer, std::shared_ptr<CheckOptions> check_options = nullptr)
-      -> bool;
+  auto ExecuteSql(const std::string &sql, ResultWriter &writer) -> bool;
 
   /**
    * Execute a SQL query in the BusTub instance with provided txn.
    */
-  auto ExecuteSqlTxn(const std::string &sql, ResultWriter &writer, Transaction *txn,
-                     std::shared_ptr<CheckOptions> check_options = nullptr) -> bool;
+  auto ExecuteSqlTxn(const std::string &sql, ResultWriter &writer, Transaction *txn) -> bool;
 
   /**
    * FOR TEST ONLY. Generate test tables in this BusTub instance.
@@ -280,13 +271,6 @@ class BustubInstance {
   void CmdDisplayIndices(ResultWriter &writer);
   void CmdDisplayHelp(ResultWriter &writer);
   void WriteOneCell(const std::string &cell, ResultWriter &writer);
-
-  void HandleCreateStatement(Transaction *txn, const CreateStatement &stmt, ResultWriter &writer);
-  void HandleIndexStatement(Transaction *txn, const IndexStatement &stmt, ResultWriter &writer);
-  void HandleExplainStatement(Transaction *txn, const ExplainStatement &stmt, ResultWriter &writer);
-  void HandleVariableShowStatement(Transaction *txn, const VariableShowStatement &stmt, ResultWriter &writer);
-  void HandleVariableSetStatement(Transaction *txn, const VariableSetStatement &stmt, ResultWriter &writer);
-
   std::unordered_map<std::string, std::string> session_variables_;
 };
 

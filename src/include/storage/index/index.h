@@ -156,9 +156,8 @@ class Index {
    * @param key The index key
    * @param rid The RID associated with the key
    * @param transaction The transaction context
-   * @returns whether insertion is successful
    */
-  virtual auto InsertEntry(const Tuple &key, RID rid, Transaction *transaction) -> bool = 0;
+  virtual void InsertEntry(const Tuple &key, RID rid, Transaction *transaction) = 0;
 
   /**
    * Delete an index entry by key.

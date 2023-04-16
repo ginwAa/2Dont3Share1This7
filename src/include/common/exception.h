@@ -57,13 +57,10 @@ class Exception : public std::runtime_error {
    * Construct a new Exception instance.
    * @param message The exception message
    */
-  explicit Exception(const std::string &message, bool print = true)
-      : std::runtime_error(message), type_(ExceptionType::INVALID) {
+  explicit Exception(const std::string &message) : std::runtime_error(message), type_(ExceptionType::INVALID) {
 #ifndef NDEBUG
-    if (print) {
-      std::string exception_message = "Message :: " + message + "\n";
-      std::cerr << exception_message;
-    }
+    std::string exception_message = "Message :: " + message + "\n";
+    std::cerr << exception_message;
 #endif
   }
 
@@ -72,14 +69,12 @@ class Exception : public std::runtime_error {
    * @param exception_type The exception type
    * @param message The exception message
    */
-  Exception(ExceptionType exception_type, const std::string &message, bool print = true)
+  Exception(ExceptionType exception_type, const std::string &message)
       : std::runtime_error(message), type_(exception_type) {
 #ifndef NDEBUG
-    if (print) {
-      std::string exception_message =
-          "\nException Type :: " + ExceptionTypeToString(type_) + "\nMessage :: " + message + "\n";
-      std::cerr << exception_message;
-    }
+    std::string exception_message =
+        "\nException Type :: " + ExceptionTypeToString(type_) + "\nMessage :: " + message + "\n";
+    std::cerr << exception_message;
 #endif
   }
 
@@ -127,7 +122,7 @@ class NotImplementedException : public Exception {
 class ExecutionException : public Exception {
  public:
   ExecutionException() = delete;
-  explicit ExecutionException(const std::string &msg) : Exception(ExceptionType::EXECUTION, msg, false) {}
+  explicit ExecutionException(const std::string &msg) : Exception(ExceptionType::EXECUTION, msg) {}
 };
 
 }  // namespace bustub

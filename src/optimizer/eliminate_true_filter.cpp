@@ -8,6 +8,8 @@
 
 namespace bustub {
 
+#ifdef BUSTUB_OPTIMIZER_HACK_REMOVE_AFTER_2022_FALL
+
 auto Optimizer::OptimizeEliminateTrueFilter(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef {
   std::vector<AbstractPlanNodeRef> children;
   for (const auto &child : plan->GetChildren()) {
@@ -18,7 +20,7 @@ auto Optimizer::OptimizeEliminateTrueFilter(const AbstractPlanNodeRef &plan) -> 
 
   if (optimized_plan->GetType() == PlanType::Filter) {
     const auto &filter_plan = dynamic_cast<const FilterPlanNode &>(*optimized_plan);
-    if (IsPredicateTrue(filter_plan.GetPredicate())) {
+    if (IsPredicateTrue(*filter_plan.GetPredicate())) {
       BUSTUB_ASSERT(optimized_plan->children_.size() == 1, "must have exactly one children");
       return optimized_plan->children_[0];
     }
@@ -26,5 +28,7 @@ auto Optimizer::OptimizeEliminateTrueFilter(const AbstractPlanNodeRef &plan) -> 
 
   return optimized_plan;
 }
+
+#endif
 
 }  // namespace bustub

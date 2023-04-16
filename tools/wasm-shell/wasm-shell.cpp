@@ -17,7 +17,7 @@ extern "C" {
 
 auto BustubInit() -> int {
   std::cout << "Initialize BusTub..." << std::endl;
-  auto bustub = std::make_unique<bustub::BustubInstance>();
+  auto bustub = std::make_unique<bustub::BustubInstance>("test.db");
   bustub->GenerateMockTable();
 
   if (bustub->buffer_pool_manager_ != nullptr) {

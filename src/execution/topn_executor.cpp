@@ -10,6 +10,4 @@ void TopNExecutor::Init() { throw NotImplementedException("TopNExecutor is not i
 
 auto TopNExecutor::Next(Tuple *tuple, RID *rid) -> bool { return false; }
 
-auto TopNExecutor::GetNumInHeap() -> size_t { throw NotImplementedException("TopNExecutor is not implemented"); };
-
 }  // namespace bustub

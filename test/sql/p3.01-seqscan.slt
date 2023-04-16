@@ -1,4 +1,4 @@
-# 4 pts
+# 5 pts
 
 query
 select * from test_simple_seq_1;

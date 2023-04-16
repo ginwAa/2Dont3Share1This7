@@ -8,7 +8,6 @@ add_library(
         fmt_impl.cpp
         hash_join_executor.cpp
         index_scan_executor.cpp
-        init_check_executor.cpp
         insert_executor.cpp
         limit_executor.cpp
         mock_scan_executor.cpp
@@ -19,7 +18,6 @@ add_library(
         seq_scan_executor.cpp
         sort_executor.cpp
         topn_executor.cpp
-        topn_check_executor.cpp
         update_executor.cpp
         values_executor.cpp
 )
