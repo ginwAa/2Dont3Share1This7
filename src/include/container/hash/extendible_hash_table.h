@@ -159,7 +159,7 @@ class ExtendibleHashTable : public HashTable<K, V> {
 
    private:
     // TODO(student): You may add additional private members and helper functions
-    size_t size_;
+    const size_t size_;
     int depth_;
     std::list<std::pair<K, V>> list_;
   };
@@ -180,8 +180,7 @@ class ExtendibleHashTable : public HashTable<K, V> {
    * @brief Redistribute the kv pairs in a full bucket.
    * @param bucket The bucket to be redistributed.
    */
-  auto RedistributeBucket(std::shared_ptr<Bucket> bucket) -> void;
-
+  auto RedistributeBucket(std::shared_ptr<Bucket> bucket, const uint64_t &p) -> void;
   /*****************************************************************
    * Must acquire latch_ first before calling the below functions. *
    *****************************************************************/
@@ -197,5 +196,6 @@ class ExtendibleHashTable : public HashTable<K, V> {
   auto GetLocalDepthInternal(int dir_index) const -> int;
   auto GetNumBucketsInternal() const -> int;
 };
+
 
 }  // namespace bustub
