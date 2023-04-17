@@ -104,4 +104,9 @@ auto LRUKReplacer::Size() -> size_t {
   return curr_size_;
 }
 
+//auto LRUKReplacer::Enough() -> bool {
+//  std::scoped_lock<std::mutex> lock(latch_);
+//  return total_size_ < replacer_size_;
+//}
+
 }  // namespace bustub

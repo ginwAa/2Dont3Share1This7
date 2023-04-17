@@ -133,6 +133,8 @@ class LRUKReplacer {
    * @return size_t
    */
   auto Size() -> size_t;
+
+//  auto Enough() -> bool;
  private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.

@@ -82,6 +82,10 @@ template <typename K, typename V>
 void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
   std::scoped_lock<std::mutex> lock(latch_);
   auto hi = IndexOf(key);
+  V old_value;
+  if (dir_[hi]->Find(key, old_value)) {
+    dir_[hi]->Remove(key);
+  }
   while (dir_[hi]->IsFull()) {
     dir_[hi]->IncrementDepth();
     if (GetGlobalDepthInternal() < GetLocalDepthInternal(hi)) {
@@ -96,14 +100,14 @@ void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
 
 //  std::cout << "$ " << GetNumBucketsInternal() << '\n';
 //  for (int i = 0; i < int(dir_.size()); ++i) {
-//    std::cout << "# ";
-//    std::string s = "";
-//    for (int j = 0; j < global_depth_; ++j) {
-//      s += char((i >> j & 1) + '0');
-//    }
-//    std::cout << std::string (s.rbegin(), s.rend()) << ':';
+//    std::cout << "# :";
+////    std::string s = "";
+////    for (int j = 0; j < global_depth_; ++j) {
+////      s += char((i >> j & 1) + '0');
+////    }
+////    std::cout << std::string (s.rbegin(), s.rend()) << ':';
 //    for (auto [k, v] : dir_[i]->GetItems()) {
-//      std::cout << "[" << k << "] ";
+//      std::cout << "[" << k << "] " << int(v) << ' ';
 //    }
 //    std::cout << '\n';
 //  }
@@ -167,11 +171,11 @@ auto ExtendibleHashTable<K, V>::Bucket::Insert(const K &key, const V &value) -> 
   return true;
 }
 
-template class ExtendibleHashTable<page_id_t, Page *>;
-template class ExtendibleHashTable<Page *, std::list<Page *>::iterator>;
+//template class ExtendibleHashTable<page_id_t, Page *>;
+//template class ExtendibleHashTable<Page *, std::list<Page *>::iterator>;
 template class ExtendibleHashTable<int, int>;
 // test purpose
-template class ExtendibleHashTable<int, std::string>;
-template class ExtendibleHashTable<int, std::list<int>::iterator>;
+//template class ExtendibleHashTable<int, std::string>;
+//template class ExtendibleHashTable<int, std::list<int>::iterator>;
 
 }  // namespace bustub

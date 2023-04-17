@@ -140,6 +140,10 @@ class BufferPoolManagerInstance : public BufferPoolManager {
    */
   auto DeletePgImp(page_id_t page_id) -> bool override;
 
+  auto SetFrame(const frame_id_t &fid, const page_id_t &pid) -> void;
+
+  auto PopFrame(frame_id_t &fid) -> void;
+
   /** Number of pages in the buffer pool. */
   const size_t pool_size_;
   /** The next page id to be allocated  */
@@ -157,6 +161,8 @@ class BufferPoolManagerInstance : public BufferPoolManager {
   ExtendibleHashTable<page_id_t, frame_id_t> *page_table_;
   /** Replacer to find unpinned pages for replacement. */
   LRUKReplacer *replacer_;
+//  /** Frame table for keeping track of page id in the buffer pool*/
+//  std::vector<page_id_t> frame_table_;
   /** List of free frames that don't have any pages on them. */
   std::list<frame_id_t> free_list_;
   /** This latch protects shared data structures. We recommend updating this comment to describe what it protects. */
