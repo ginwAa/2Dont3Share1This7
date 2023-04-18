@@ -14,10 +14,9 @@
 
 #include <limits>
 #include <list>
-#include <map>
+#include <memory>
 #include <mutex>  // NOLINT
-#include <stack>
-#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "common/config.h"
@@ -134,20 +133,22 @@ class LRUKReplacer {
    */
   auto Size() -> size_t;
 
-//  auto Enough() -> bool;
+  struct Info {
+    Info() = default;
+    bool pin_{false};
+    std::list<size_t> record_;
+  };
+  auto InfoLess(const Info &lhs, const Info &rhs) const -> bool;
+
  private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.
   size_t current_timestamp_{0};
-  size_t curr_size_{0};  // evi
+  size_t curr_size_{0};
   const size_t replacer_size_;
   const size_t k_;
-  constexpr static size_t INF = 1E18;
-  constexpr static std::tuple<size_t, size_t, bool> EMPTY_FRAME = std::tuple<size_t, size_t, bool>(-1, -1, true);
   std::mutex latch_;
-  std::map<std::pair<size_t, size_t>, std::pair<std::stack<size_t>, frame_id_t>> data_; // size, last, stack, fid
-  std::vector<std::tuple<size_t, size_t, bool>> dir_; //size last, evi
+  std::vector<std::shared_ptr<Info>> dir_;
 };
-
 
 }  // namespace bustub
