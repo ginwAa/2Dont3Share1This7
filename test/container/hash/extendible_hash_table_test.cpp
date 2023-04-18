@@ -68,4 +68,80 @@ TEST(ExtendibleHashTableTest, ConcurrentInsertTest) {
   }
 }
 
+TEST(ExtendibleHashTableTest, DISABLED_Test0) {
+  auto table = std::make_unique<ExtendibleHashTable<int, int>>(2);
+
+  table->Insert(0, 0);
+
+  EXPECT_EQ(table->GetGlobalDepth(), 0);
+
+  table->Insert(0, 1);
+  table->Insert(0, 2);
+
+  EXPECT_EQ(table->GetGlobalDepth(), 0);
+  EXPECT_TRUE(table->Remove(0));
+  EXPECT_FALSE(table->Remove(0));
+
+  table->Insert(0, 0);
+  table->Insert(2, 2);
+  table->Insert(4, 4);
+  EXPECT_EQ(table->GetGlobalDepth(), 2);
+  EXPECT_EQ(table->GetNumBuckets(), 3);
+  EXPECT_EQ(table->GetLocalDepth(1), 1);
+  EXPECT_EQ(table->GetLocalDepth(0), 2);
+  EXPECT_EQ(table->GetLocalDepth(2), 2);
+
+  table->Insert(6, 6);
+  table->Insert(8, 8);
+  EXPECT_EQ(table->GetGlobalDepth(), 3);
+  EXPECT_EQ(table->GetNumBuckets(), 3);
+  EXPECT_EQ(table->GetLocalDepth(1), 1);
+  EXPECT_EQ(table->GetLocalDepth(0), 2);
+  EXPECT_EQ(table->GetLocalDepth(2), 2);
+}
+
+TEST(ExtendibleHashTableTest, Test1) {
+  auto table = std::make_unique<ExtendibleHashTable<int, int>>(2);
+
+  table->Insert(0, 0);
+  table->Insert(1, 1);
+  EXPECT_EQ(table->GetNumBuckets(), 1);
+  EXPECT_EQ(table->GetGlobalDepth(), 0);
+  EXPECT_EQ(table->GetLocalDepth(0), 0);
+
+  table->Insert(2, 2);
+  EXPECT_EQ(table->GetNumBuckets(), 2);
+  EXPECT_EQ(table->GetGlobalDepth(), 1);
+  EXPECT_EQ(table->GetLocalDepth(0), 1);
+  EXPECT_EQ(table->GetLocalDepth(1), 1);
+
+  table->Insert(3, 3);
+  EXPECT_EQ(table->GetNumBuckets(), 2);
+  EXPECT_EQ(table->GetGlobalDepth(), 1);
+  EXPECT_EQ(table->GetLocalDepth(0), 1);
+  EXPECT_EQ(table->GetLocalDepth(1), 1);
+
+  table->Insert(4, 4);
+  EXPECT_EQ(table->GetNumBuckets(), 3);
+  EXPECT_EQ(table->GetGlobalDepth(), 2);
+  EXPECT_EQ(table->GetLocalDepth(0), 2);
+  EXPECT_EQ(table->GetLocalDepth(1), 1);
+  EXPECT_EQ(table->GetLocalDepth(2), 2);
+
+  table->Insert(5, 5);
+  EXPECT_EQ(table->GetNumBuckets(), 4);
+  EXPECT_EQ(table->GetGlobalDepth(), 2);
+  EXPECT_EQ(table->GetLocalDepth(0), 2);
+  EXPECT_EQ(table->GetLocalDepth(1), 2);
+  EXPECT_EQ(table->GetLocalDepth(2), 2);
+  EXPECT_EQ(table->GetLocalDepth(3), 2);
+
+  table->Insert(5, 5);
+  EXPECT_EQ(table->GetNumBuckets(), 4);
+  EXPECT_EQ(table->GetGlobalDepth(), 2);
+  EXPECT_EQ(table->GetLocalDepth(0), 2);
+  EXPECT_EQ(table->GetLocalDepth(1), 2);
+  EXPECT_EQ(table->GetLocalDepth(2), 2);
+  EXPECT_EQ(table->GetLocalDepth(3), 2);
+}
 }  // namespace bustub
