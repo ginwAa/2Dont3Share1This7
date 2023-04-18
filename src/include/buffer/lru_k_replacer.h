@@ -53,7 +53,7 @@ class LRUKReplacer {
    *
    * @brief Destroys the LRUReplacer.
    */
-  ~LRUKReplacer() = default;
+  ~LRUKReplacer();
 
   /**
    * TODO(P1): Add implementation
@@ -134,21 +134,26 @@ class LRUKReplacer {
   auto Size() -> size_t;
 
   struct Info {
-    Info() = default;
-    bool pin_{false};
+    explicit Info(frame_id_t fid = -1, bool unpin = true) : frame_id_(fid), unpin_(unpin) {}
+    frame_id_t frame_id_;
+    bool unpin_;
+    Info *pre_{nullptr};
+    Info *nxt_{nullptr};
     std::list<size_t> record_;
   };
-  auto InfoLess(const Info &lhs, const Info &rhs) const -> bool;
 
- private:
+  // private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.
   size_t current_timestamp_{0};
   size_t curr_size_{0};
+  size_t siz0_{0};
+  size_t siz1_{0};
   const size_t replacer_size_;
   const size_t k_;
   std::mutex latch_;
-  std::vector<std::shared_ptr<Info>> dir_;
+  Info *head0_, *head1_;
+  std::vector<std::shared_ptr<Info>> dir0_, dir1_;
 };
 
 }  // namespace bustub
