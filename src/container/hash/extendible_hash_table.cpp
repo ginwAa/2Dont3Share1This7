@@ -22,8 +22,7 @@
 namespace bustub {
 
 template <typename K, typename V>
-ExtendibleHashTable<K, V>::ExtendibleHashTable(size_t bucket_size)
-    : bucket_size_(bucket_size) {
+ExtendibleHashTable<K, V>::ExtendibleHashTable(size_t bucket_size) : bucket_size_(bucket_size) {
   dir_.emplace_back(std::make_shared<Bucket>(bucket_size));
 }
 
