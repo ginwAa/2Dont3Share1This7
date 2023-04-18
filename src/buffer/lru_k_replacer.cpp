@@ -22,9 +22,6 @@ LRUKReplacer::LRUKReplacer(size_t num_frames, const size_t &k) : replacer_size_(
 
 auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
   std::scoped_lock<std::mutex> lock(latch_);
-  if (curr_size_ == replacer_size_) {
-    return false;
-  }
   if (curr_size_ == 0) {
     return false;
   }
@@ -33,6 +30,9 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
     if (InfoLess(*dir_[i], *dir_[j])) {
       j = i;
     }
+  }
+  if (dir_[j]->pin_ || dir_[j]->record_.empty()) {
+    return false;
   }
   dir_[j] = std::make_shared<LRUKReplacer::Info>();
   *frame_id = static_cast<frame_id_t>(j);
