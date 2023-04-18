@@ -99,9 +99,6 @@ auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
 
 auto BufferPoolManagerInstance::UnpinPgImp(page_id_t page_id, bool is_dirty) -> bool {
   std::scoped_lock<std::mutex> lock(latch_);
-  if (page_id == INVALID_PAGE_ID) {
-    return false;
-  }
   frame_id_t fid = -1;
   if (!page_table_->Find(page_id, fid)) {
     return false;
@@ -156,7 +153,7 @@ auto BufferPoolManagerInstance::DeletePgImp(page_id_t page_id) -> bool {
   pages_[fid].pin_count_ = 0;
   pages_[fid].page_id_ = INVALID_PAGE_ID;
   pages_[fid].ResetMemory();
-  page_table_->Remove(fid);
+  page_table_->Remove(page_id);
   replacer_->Remove(fid);
   free_list_.emplace_back(fid);
   DeallocatePage(page_id);
