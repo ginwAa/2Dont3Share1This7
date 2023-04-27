@@ -23,7 +23,7 @@ INDEX_TEMPLATE_ARGUMENTS
 class IndexIterator {
  public:
   // you may define your own constructor based on your member variables
-  IndexIterator();
+  IndexIterator(BufferPoolManager *bpm, B_PLUS_TREE_LEAF_PAGE_TYPE* page, int i);
   ~IndexIterator();  // NOLINT
 
   auto IsEnd() -> bool;
@@ -38,6 +38,9 @@ class IndexIterator {
 
  private:
   // add your own private member variables here
+  BufferPoolManager *bpm_;
+  B_PLUS_TREE_LEAF_PAGE_TYPE* page_;
+  int index_;
 };
 
 }  // namespace bustub

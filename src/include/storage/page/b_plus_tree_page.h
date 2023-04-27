@@ -44,27 +44,22 @@ class BPlusTreePage {
  public:
   auto IsLeafPage() const -> bool;
   auto IsRootPage() const -> bool;
-  void SetPageType(IndexPageType page_type);
-
+  void SetPageType(const IndexPageType &page_type, BufferPoolManager *buffer_pool_manager_ = nullptr);
   auto GetSize() const -> int;
-  void SetSize(int size);
-  void IncreaseSize(int amount);
-
+  void SetSize(const int &size, BufferPoolManager *buffer_pool_manager_ = nullptr);
+  void IncreaseSize(int amount, BufferPoolManager *buffer_pool_manager_ = nullptr);
   auto GetMaxSize() const -> int;
-  void SetMaxSize(int max_size);
+  void SetMaxSize(const int &max_size, BufferPoolManager *buffer_pool_manager_ = nullptr);
   auto GetMinSize() const -> int;
-
   auto GetParentPageId() const -> page_id_t;
-  void SetParentPageId(page_id_t parent_page_id);
-
+  void SetParentPageId(const page_id_t &parent_page_id, BufferPoolManager *buffer_pool_manager_ = nullptr);
   auto GetPageId() const -> page_id_t;
-  void SetPageId(page_id_t page_id);
-
-  void SetLSN(lsn_t lsn = INVALID_LSN);
+  void SetPageId(const page_id_t &page_id, BufferPoolManager *buffer_pool_manager_ = nullptr);
+  void SetLSN(const lsn_t &lsn = INVALID_LSN, BufferPoolManager *buffer_pool_manager_ = nullptr);
 
  private:
   // member variable, attributes that both internal and leaf page share
-  IndexPageType page_type_ __attribute__((__unused__));
+  IndexPageType page_type_;
   lsn_t lsn_ __attribute__((__unused__));
   int size_ __attribute__((__unused__));
   int max_size_ __attribute__((__unused__));

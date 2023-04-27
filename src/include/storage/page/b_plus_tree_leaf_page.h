@@ -44,15 +44,28 @@ class BPlusTreeLeafPage : public BPlusTreePage {
  public:
   // After creating a new leaf page from buffer pool, must call initialize
   // method to set default values
-  void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = LEAF_PAGE_SIZE);
+  void Init(const page_id_t &page_id, const page_id_t &parent_id = INVALID_PAGE_ID,
+            const int &max_size = LEAF_PAGE_SIZE, BufferPoolManager *buffer_pool_manager_ = nullptr);
   // helper methods
   auto GetNextPageId() const -> page_id_t;
-  void SetNextPageId(page_id_t next_page_id);
-  auto KeyAt(int index) const -> KeyType;
+  void SetNextPageId(const page_id_t &next_page_id);
+  auto KeyAt(const int &index) const -> KeyType;
+  void SetKeyAt(const int &index, const KeyType &key);
+  auto ValueAt(const int &index) const -> ValueType;
+  void SetValueAt(const int &index, const ValueType &val);
+  auto Insert(const KeyType &key, const ValueType &val, const KeyComparator &comparator) -> bool;
+  auto LowerBound(const KeyType &key, const KeyComparator &comparator) -> int;
+  auto UpperBound(const KeyType &key, const KeyComparator &comparator) -> int;
+  void MoveAllToLeft(BPlusTreeLeafPage *dst_page);
+  void MoveHalfTo(BPlusTreeLeafPage *dst_page, bool side);
+  void MoveDataFrom(MappingType *items, int size, bool side);
+  auto Remove(const KeyType &key, const KeyComparator &comparator) -> bool;
+  auto At(const int &index) -> const MappingType &;
 
  private:
   page_id_t next_page_id_;
   // Flexible array member for page data.
   MappingType array_[1];
 };
+
 }  // namespace bustub
