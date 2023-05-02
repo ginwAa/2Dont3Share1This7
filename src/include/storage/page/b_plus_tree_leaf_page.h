@@ -45,14 +45,12 @@ class BPlusTreeLeafPage : public BPlusTreePage {
   // After creating a new leaf page from buffer pool, must call initialize
   // method to set default values
   void Init(const page_id_t &page_id, const page_id_t &parent_id = INVALID_PAGE_ID,
-            const int &max_size = LEAF_PAGE_SIZE, BufferPoolManager *buffer_pool_manager_ = nullptr);
+            const int &max_size = LEAF_PAGE_SIZE);
   // helper methods
   auto GetNextPageId() const -> page_id_t;
   void SetNextPageId(const page_id_t &next_page_id);
   auto KeyAt(const int &index) const -> KeyType;
-  void SetKeyAt(const int &index, const KeyType &key);
   auto ValueAt(const int &index) const -> ValueType;
-  void SetValueAt(const int &index, const ValueType &val);
   auto Insert(const KeyType &key, const ValueType &val, const KeyComparator &comparator) -> bool;
   auto UpperBound(const KeyType &key, const KeyComparator &comparator) -> int;
   void MoveAllToLeft(BPlusTreeLeafPage *dst_page);

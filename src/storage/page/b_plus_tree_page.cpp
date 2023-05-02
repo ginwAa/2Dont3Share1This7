@@ -19,53 +19,21 @@ namespace bustub {
  */
 auto BPlusTreePage::IsLeafPage() const -> bool { return page_type_ == IndexPageType::LEAF_PAGE; }
 auto BPlusTreePage::IsRootPage() const -> bool { return GetParentPageId() == INVALID_PAGE_ID; }
-void BPlusTreePage::SetPageType(const IndexPageType &page_type, BufferPoolManager *buffer_pool_manager_) {
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->FetchPage(GetPageId());
-  }
-  page_type_ = page_type;
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->UnpinPage(GetPageId(), true);
-  }
-}
+void BPlusTreePage::SetPageType(const IndexPageType &page_type) { page_type_ = page_type; }
 
 /*
  * Helper methods to get/set size (number of key/value pairs stored in that
  * page)
  */
 auto BPlusTreePage::GetSize() const -> int { return size_; }
-void BPlusTreePage::SetSize(const int &size, BufferPoolManager *buffer_pool_manager_) {
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->FetchPage(GetPageId());
-  }
-  size_ = size;
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->UnpinPage(GetPageId(), true);
-  }
-}
-void BPlusTreePage::IncreaseSize(int amount, BufferPoolManager *buffer_pool_manager_) {
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->FetchPage(GetPageId());
-  }
-  size_ += amount;
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->UnpinPage(GetPageId(), true);
-  }
-}
+void BPlusTreePage::SetSize(const int &size) { size_ = size; }
+void BPlusTreePage::IncreaseSize(int amount) { size_ += amount; }
 
 /*
  * Helper methods to get/set max size (capacity) of the page
  */
 auto BPlusTreePage::GetMaxSize() const -> int { return max_size_; }
-void BPlusTreePage::SetMaxSize(const int &size, BufferPoolManager *buffer_pool_manager_) {
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->FetchPage(GetPageId());
-  }
-  max_size_ = size;
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->UnpinPage(GetPageId(), true);
-  }
-}
+void BPlusTreePage::SetMaxSize(const int &size) { max_size_ = size; }
 
 /*
  * Helper method to get min page size
@@ -88,41 +56,17 @@ auto BPlusTreePage::GetMinSize() const -> int {
  * Helper methods to get/set parent page id
  */
 auto BPlusTreePage::GetParentPageId() const -> page_id_t { return parent_page_id_; }
-void BPlusTreePage::SetParentPageId(page_id_t parent_page_id, BufferPoolManager *buffer_pool_manager_) {
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->FetchPage(GetPageId());
-  }
-  parent_page_id_ = parent_page_id;
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->UnpinPage(GetPageId(), true);
-  }
-}
+void BPlusTreePage::SetParentPageId(page_id_t parent_page_id) { parent_page_id_ = parent_page_id; }
 
 /*
  * Helper methods to get/set self page id
  */
 auto BPlusTreePage::GetPageId() const -> page_id_t { return page_id_; }
-void BPlusTreePage::SetPageId(const page_id_t &page_id, BufferPoolManager *buffer_pool_manager_) {
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->FetchPage(GetPageId());
-  }
-  page_id_ = page_id;
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->UnpinPage(GetPageId(), true);
-  }
-}
+void BPlusTreePage::SetPageId(const page_id_t &page_id) { page_id_ = page_id; }
 
 /*
  * Helper methods to set lsn
  */
-void BPlusTreePage::SetLSN(const lsn_t &lsn, BufferPoolManager *buffer_pool_manager_) {
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->FetchPage(GetPageId());
-  }
-  lsn_ = lsn;
-  if (buffer_pool_manager_ != nullptr) {
-    buffer_pool_manager_->UnpinPage(GetPageId(), true);
-  }
-}
+void BPlusTreePage::SetLSN(const lsn_t &lsn) { lsn_ = lsn; }
 
 }  // namespace bustub

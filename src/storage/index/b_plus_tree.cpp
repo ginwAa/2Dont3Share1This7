@@ -15,9 +15,7 @@ BPLUSTREE_TYPE::BPlusTree(std::string name, BufferPoolManager *buffer_pool_manag
       buffer_pool_manager_(buffer_pool_manager),
       comparator_(comparator),
       leaf_max_size_(leaf_max_size),
-      internal_max_size_(internal_max_size) {
-  BUSTUB_ASSERT(leaf_max_size > 1, "Leaf max size too small.");
-}
+      internal_max_size_(internal_max_size) {}
 
 /*
  * Helper function to decide whether current b+tree is empty
@@ -35,9 +33,9 @@ auto BPLUSTREE_TYPE::IsEmpty() const -> bool { return root_page_id_ == INVALID_P
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *transaction) -> bool {
   bool res = false;
-  root_latch_.WLock();
+  root_latch_.RLock();
   if (IsEmpty()) {
-    root_latch_.WUnlock();
+    root_latch_.RUnlock();
     return false;
   }
   if (transaction != nullptr) {
@@ -221,7 +219,6 @@ auto BPLUSTREE_TYPE::RedistributeAndMerge(BPlusTreePage *old, Transaction *t) ->
   if (old->GetParentPageId() == INVALID_PAGE_ID) {
     if (old->IsLeafPage()) {
       root_page_id_ = INVALID_PAGE_ID;
-      UpdateRootPageId();
     }
     return false;
   }
@@ -296,8 +293,7 @@ auto BPLUSTREE_TYPE::RedistributeAndMerge(BPlusTreePage *old, Transaction *t) ->
     int pos = par->UpperBound(page->KeyAt(0), comparator_) - 1;
     if (pos > 0) {
       bro_id = par->ValueAt(pos - 1);
-      auto bro_raw = buffer_pool_manager_->FetchPage(bro_id);
-      auto bro = reinterpret_cast<LeafPage *>(bro_raw->GetData());
+      auto bro = reinterpret_cast<LeafPage *>(buffer_pool_manager_->FetchPage(bro_id)->GetData());
       if (bro->GetSize() + page->GetSize() <= bro->GetMaxSize()) {
         par->Remove(page->KeyAt(0), buffer_pool_manager_, comparator_);
         page->MoveAllToLeft(bro);
@@ -314,8 +310,7 @@ auto BPLUSTREE_TYPE::RedistributeAndMerge(BPlusTreePage *old, Transaction *t) ->
     }
     if (!result && pos < par->GetSize() - 1) {
       bro_id = par->ValueAt(pos + 1);
-      auto bro_raw = buffer_pool_manager_->FetchPage(bro_id);
-      auto bro = reinterpret_cast<LeafPage *>(bro_raw->GetData());
+      auto bro = reinterpret_cast<LeafPage *>(buffer_pool_manager_->FetchPage(bro_id)->GetData());
       if (bro->GetSize() + page->GetSize() <= bro->GetMaxSize()) {
         par->Remove(bro->KeyAt(0), buffer_pool_manager_, comparator_);
         bro->MoveAllToLeft(page);
@@ -335,8 +330,7 @@ auto BPLUSTREE_TYPE::RedistributeAndMerge(BPlusTreePage *old, Transaction *t) ->
     int pos = par->UpperBound(page->KeyAt(0), comparator_) - 1;
     if (pos > 0) {
       bro_id = par->ValueAt(pos - 1);
-      auto bro_raw = buffer_pool_manager_->FetchPage(bro_id);
-      auto bro = reinterpret_cast<InternalPage *>(bro_raw->GetData());
+      auto bro = reinterpret_cast<InternalPage *>(buffer_pool_manager_->FetchPage(bro_id)->GetData());
       if (bro->GetSize() + page->GetSize() <= bro->GetMaxSize()) {
         par->Remove(page->KeyAt(0), buffer_pool_manager_, comparator_);
         page->MoveAllToLeft(bro, buffer_pool_manager_, comparator_);
@@ -353,8 +347,7 @@ auto BPLUSTREE_TYPE::RedistributeAndMerge(BPlusTreePage *old, Transaction *t) ->
     }
     if (!result && pos < par->GetSize() - 1) {
       bro_id = par->ValueAt(pos + 1);
-      auto bro_raw = buffer_pool_manager_->FetchPage(bro_id);
-      auto bro = reinterpret_cast<InternalPage *>(bro_raw->GetData());
+      auto bro = reinterpret_cast<InternalPage *>(buffer_pool_manager_->FetchPage(bro_id)->GetData());
       if (bro->GetSize() + page->GetSize() <= bro->GetMaxSize()) {
         par->Remove(bro->KeyAt(0), buffer_pool_manager_, comparator_);
         bro->MoveAllToLeft(page, buffer_pool_manager_, comparator_);
@@ -391,7 +384,6 @@ void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *transaction) {
     root_latch_.WUnlock();
     return;
   }
-  //  std::cout << "r " << key << std::endl;
   if (transaction == nullptr) {
     auto *t = new Transaction(1);
     auto [raw, root_locked] = FindLeaf(key, OPT::REMOVE, t);
@@ -442,7 +434,11 @@ auto BPLUSTREE_TYPE::UnLockAll(Transaction *t, OPT opt, bool &root) -> void {
     }
   }
   if (root) {
-    root_latch_.WUnlock();
+    if (opt == OPT::READ) {
+      root_latch_.RUnlock();
+    } else {
+      root_latch_.WUnlock();
+    }
     root = false;
   }
 }

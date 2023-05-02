@@ -27,13 +27,11 @@ namespace bustub {
  * next page id and set max size
  */
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(const page_id_t &page_id, const page_id_t &parent_id, const int &max_size,
-                                      BufferPoolManager *buffer_pool_manager_) {
-  BUSTUB_ASSERT(max_size <= static_cast<int>(LEAF_PAGE_SIZE), "Leaf page size too large.");
+void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(const page_id_t &page_id, const page_id_t &parent_id, const int &max_size) {
   SetPageId(page_id);
   SetParentPageId(parent_id);
   SetPageType(IndexPageType::LEAF_PAGE);
-  SetMaxSize(max_size, nullptr);
+  SetMaxSize(max_size);
 }
 
 /**
@@ -50,28 +48,10 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(const page_id_t &next_page_id) { 
  * array offset)
  */
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(const int &index) const -> KeyType {
-  //  BUSTUB_ASSERT(index >= 0 && index < GetSize(), "Wrong index in Leaf->KeyAt()");
-  return array_[index].first;
-}
+auto B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(const int &index) const -> KeyType { return array_[index].first; }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_LEAF_PAGE_TYPE::ValueAt(const int &index) const -> ValueType {
-  BUSTUB_ASSERT(index >= 0 && index < GetMaxSize(), "Wrong index in Leaf->ValueAt()");
-  return array_[index].second;
-}
-
-INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::SetKeyAt(const int &index, const KeyType &key) {
-  BUSTUB_ASSERT(index >= 0 && index < GetMaxSize(), "Wrong index in Leaf->SetKeyAt()");
-  array_[index].first = key;
-}
-
-INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::SetValueAt(const int &index, const ValueType &val) {
-  BUSTUB_ASSERT(index >= 0 && index < GetMaxSize(), "Wrong index in Leaf->SetValueAt()");
-  array_[index].second = val;
-}
+auto B_PLUS_TREE_LEAF_PAGE_TYPE::ValueAt(const int &index) const -> ValueType { return array_[index].second; }
 
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &val, const KeyComparator &comparator)

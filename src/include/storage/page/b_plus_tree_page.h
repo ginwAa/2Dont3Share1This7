@@ -44,18 +44,18 @@ class BPlusTreePage {
  public:
   auto IsLeafPage() const -> bool;
   auto IsRootPage() const -> bool;
-  void SetPageType(const IndexPageType &page_type, BufferPoolManager *buffer_pool_manager_ = nullptr);
+  void SetPageType(const IndexPageType &page_type);
   auto GetSize() const -> int;
-  void SetSize(const int &size, BufferPoolManager *buffer_pool_manager_ = nullptr);
-  void IncreaseSize(int amount, BufferPoolManager *buffer_pool_manager_ = nullptr);
+  void SetSize(const int &size);
+  void IncreaseSize(int amount);
   auto GetMaxSize() const -> int;
-  void SetMaxSize(const int &max_size, BufferPoolManager *buffer_pool_manager_ = nullptr);
+  void SetMaxSize(const int &max_size);
   auto GetMinSize() const -> int;
   auto GetParentPageId() const -> page_id_t;
-  void SetParentPageId(page_id_t parent_page_id, BufferPoolManager *buffer_pool_manager_ = nullptr);
+  void SetParentPageId(page_id_t parent_page_id);
   auto GetPageId() const -> page_id_t;
-  void SetPageId(const page_id_t &page_id, BufferPoolManager *buffer_pool_manager_ = nullptr);
-  void SetLSN(const lsn_t &lsn = INVALID_LSN, BufferPoolManager *buffer_pool_manager_ = nullptr);
+  void SetPageId(const page_id_t &page_id);
+  void SetLSN(const lsn_t &lsn = INVALID_LSN);
 
  private:
   // member variable, attributes that both internal and leaf page share
