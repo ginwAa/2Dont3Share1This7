@@ -88,7 +88,7 @@ auto BPlusTreePage::GetMinSize() const -> int {
  * Helper methods to get/set parent page id
  */
 auto BPlusTreePage::GetParentPageId() const -> page_id_t { return parent_page_id_; }
-void BPlusTreePage::SetParentPageId(const page_id_t &parent_page_id, BufferPoolManager *buffer_pool_manager_) {
+void BPlusTreePage::SetParentPageId(page_id_t parent_page_id, BufferPoolManager *buffer_pool_manager_) {
   if (buffer_pool_manager_ != nullptr) {
     buffer_pool_manager_->FetchPage(GetPageId());
   }

@@ -25,7 +25,7 @@ namespace bustub {
  * max page size
  */
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Init(const page_id_t &page_id, const page_id_t &parent_id, const int &max_size,
+void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Init(const page_id_t &page_id, page_id_t parent_id, const int &max_size,
                                           BufferPoolManager *buffer_pool_manager_) {
   BUSTUB_ASSERT(max_size <= static_cast<int>(INTERNAL_PAGE_SIZE), "Internal page size too large.");
   SetPageId(page_id);
@@ -66,25 +66,16 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetValueAt(const int &index, const ValueTyp
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::LowerBound(const KeyType &key, const KeyComparator &comparator) -> int {
-  return std::lower_bound(array_, array_ + GetSize(), key,
-                          [&comparator](const auto &pair1, auto key) { return comparator(pair1.first, key) < 0; }) -
-         array_;
-}
-
-INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::UpperBound(const KeyType &key, const KeyComparator &comparator) -> int {
-  return std::upper_bound(array_, array_ + GetSize(), key,
+  return std::upper_bound(array_ + 1, array_ + GetSize(), key,
                           [&comparator](auto key, const auto &pair1) { return comparator(pair1.first, key) > 0; }) -
          array_;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(const KeyType &key, const KeyComparator &comparator) -> bool {
+auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(const KeyType &key, BufferPoolManager *bpm, const KeyComparator &comparator)
+    -> bool {
   auto i = UpperBound(key, comparator) - 1;
-  if (i < 0) {
-    return false;
-  }
   std::move(array_ + i + 1, array_ + GetSize(), array_ + i);
   IncreaseSize(-1);
   return true;
@@ -93,8 +84,8 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::Remove(const KeyType &key, const KeyCompara
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::Insert(const KeyType &key, const ValueType &val, const KeyComparator &comparator,
                                             BufferPoolManager *bpm) -> bool {
-  auto i = UpperBound(key, comparator);
-  if (i != 0 && comparator(KeyAt(i - 1), key) == 0) {
+  int i = UpperBound(key, comparator);
+  if (comparator(KeyAt(i - 1), key) == 0) {
     return false;
   }
   std::move_backward(array_ + i, array_ + GetSize(), array_ + GetSize() + 1);
@@ -108,41 +99,74 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::Insert(const KeyType &key, const ValueType 
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllToLeft(BPlusTreeInternalPage *dst_page, BufferPoolManager *bpm) -> void {
-  dst_page->MoveDataFrom(array_, GetSize(), 1, bpm);
+auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveAllToLeft(BPlusTreeInternalPage *dst_page, BufferPoolManager *bpm,
+                                                   const KeyComparator &comparator) -> void {
+  dst_page->MoveDataFrom(array_, GetSize(), 1, bpm, comparator);
   SetSize(0);
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *dst_page, bool side, BufferPoolManager *bpm)
-    -> void {
-  int new_size = GetMinSize();
+auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *dst_page, bool side, BufferPoolManager *bpm,
+                                                const KeyComparator &comparator) -> void {
+  int new_size = ((GetMaxSize() + 1) >> 1);
   if (side) {
-    dst_page->MoveDataFrom(array_ + new_size, GetSize() - new_size, 0, bpm);
+    dst_page->MoveDataFrom(array_ + new_size, GetSize() - new_size, 0, bpm, comparator);
   } else {
-    dst_page->MoveDataFrom(array_, GetSize() - new_size, 1, bpm);
+    if (GetParentPageId() != INVALID_PAGE_ID) {
+      auto raw = bpm->FetchPage(GetParentPageId());
+      auto par = reinterpret_cast<B_PLUS_TREE_INTERNAL_PAGE_TYPE *>(raw->GetData());
+      auto x = par->UpperBound(KeyAt(0), comparator) - 1;
+      par->SetKeyAt(x, KeyAt(GetSize() - new_size));
+      bpm->UnpinPage(GetParentPageId(), true);
+    }
+    dst_page->MoveDataFrom(array_, GetSize() - new_size, 1, bpm, comparator);
     std::move(array_ + GetSize() - new_size, array_ + GetSize(), array_);
   }
   SetSize(new_size);
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveDataFrom(MappingType *items, int size, bool side, BufferPoolManager *bpm)
-    -> void {
+auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveDataFrom(MappingType *items, int size, bool side, BufferPoolManager *bpm,
+                                                  const KeyComparator &comparator) -> void {
   int j = side ? GetSize() : 0;
   if (side) {
     std::move(items, items + size, array_ + GetSize());
   } else {
-    std::move_backward(items, items + GetSize(), items + GetSize() + size);
+    KeyType key = KeyAt(0);
+    std::move_backward(array_, array_ + GetSize(), array_ + GetSize() + size);
     std::move(items, items + size, array_);
+    if (GetParentPageId() != INVALID_PAGE_ID) {
+      auto raw = bpm->FetchPage(GetParentPageId());
+      auto par = reinterpret_cast<B_PLUS_TREE_INTERNAL_PAGE_TYPE *>(raw->GetData());
+      auto x = par->UpperBound(key, comparator) - 1;
+      par->SetKeyAt(x, KeyAt(0));
+      bpm->UnpinPage(GetParentPageId(), true);
+    }
   }
   for (int i = 0; i < size; ++i) {
     auto raw_page = bpm->FetchPage(ValueAt(i + j));
-    auto page = reinterpret_cast<B_PLUS_TREE_INTERNAL_PAGE_TYPE *>(raw_page->GetData());
+    auto page = reinterpret_cast<BPlusTreePage *>(raw_page->GetData());
     page->SetParentPageId(GetPageId());
-    bpm->UnpinPage(ValueAt(i), true);
+    bpm->UnpinPage(ValueAt(i + j), true);
   }
   IncreaseSize(size);
+}
+
+INDEX_TEMPLATE_ARGUMENTS
+auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::Generate(const ValueType &left, const KeyType &rhs, const ValueType &right,
+                                              BufferPoolManager *bpm) -> void {
+  IncreaseSize(2);
+  SetKeyAt(1, rhs);
+  SetValueAt(0, left);
+  SetValueAt(1, right);
+  auto l = bpm->FetchPage(left);
+  auto lp = reinterpret_cast<BPlusTreePage *>(l->GetData());
+  lp->SetParentPageId(GetPageId());
+  bpm->UnpinPage(left, true);
+  auto r = bpm->FetchPage(right);
+  auto rp = reinterpret_cast<BPlusTreePage *>(r->GetData());
+  rp->SetParentPageId(GetPageId());
+  bpm->UnpinPage(right, true);
 }
 
 template class BPlusTreeInternalPage<GenericKey<4>, page_id_t, GenericComparator<4>>;

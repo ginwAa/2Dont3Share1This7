@@ -51,7 +51,6 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(const page_id_t &next_page_id) { 
  */
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(const int &index) const -> KeyType {
-  //  std::cout << "# " << index << ' ' << GetSize() << '\n';
   //  BUSTUB_ASSERT(index >= 0 && index < GetSize(), "Wrong index in Leaf->KeyAt()");
   return array_[index].first;
 }
@@ -88,13 +87,6 @@ auto B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &val
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_LEAF_PAGE_TYPE::LowerBound(const KeyType &key, const KeyComparator &comparator) -> int {
-  return std::lower_bound(array_, array_ + GetSize(), key,
-                          [&comparator](const auto &pair1, auto key) { return comparator(pair1.first, key) < 0; }) -
-         array_;
-}
-
-INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::UpperBound(const KeyType &key, const KeyComparator &comparator) -> int {
   return std::upper_bound(array_, array_ + GetSize(), key,
                           [&comparator](auto key, const auto &pair1) { return comparator(pair1.first, key) > 0; }) -
@@ -110,7 +102,7 @@ auto B_PLUS_TREE_LEAF_PAGE_TYPE::MoveAllToLeft(BPlusTreeLeafPage *dst_page) -> v
 
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::MoveHalfTo(BPlusTreeLeafPage *dst_page, bool side) -> void {
-  int new_size = GetMinSize();
+  int new_size = GetMaxSize() >> 1;
   if (side) {
     dst_page->MoveDataFrom(array_ + new_size, GetSize() - new_size, 0);
   } else {
@@ -146,9 +138,7 @@ auto B_PLUS_TREE_LEAF_PAGE_TYPE::Remove(const KeyType &key, const KeyComparator 
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_LEAF_PAGE_TYPE::At(const int &index) -> const MappingType & {
-  return array_[index];
-}
+auto B_PLUS_TREE_LEAF_PAGE_TYPE::At(const int &index) -> const MappingType & { return array_[index]; }
 
 template class BPlusTreeLeafPage<GenericKey<4>, RID, GenericComparator<4>>;
 template class BPlusTreeLeafPage<GenericKey<8>, RID, GenericComparator<8>>;

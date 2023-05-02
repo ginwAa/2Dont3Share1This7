@@ -39,7 +39,8 @@ class BPlusTree {
  public:
   using InternalPage = BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator>;
   using LeafPage = BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>;
-  enum class OPT {READ = 0, INSERT = 1, REMOVE = 2};
+  enum class OPT { READ = 0, INSERT = 1, REMOVE = 2 };
+
  public:
   explicit BPlusTree(std::string name, BufferPoolManager *buffer_pool_manager, const KeyComparator &comparator,
                      int leaf_max_size = LEAF_PAGE_SIZE, int internal_max_size = INTERNAL_PAGE_SIZE);
@@ -76,14 +77,14 @@ class BPlusTree {
   // read data from file and remove one by one
   void RemoveFromFile(const std::string &file_name, Transaction *transaction = nullptr);
 
-  auto FindLeaf(const KeyType &key) -> BPlusTreePage *;
-  auto InsertToParent(BPlusTreePage *raw_page, const KeyType &key, const KeyType &LeftKey) -> void;
-  auto Split(BPlusTreePage *raw_old) -> std::pair<BPlusTreePage *, KeyType>;
-  auto RedistributeAndMerge(BPlusTreePage *old) -> bool;
-  auto Safe(BPlusTreePage *node, OPT opt) -> bool;
-  auto UnpinAll(Transaction *t) -> void;
+  auto FindLeaf(const KeyType &key, OPT opt, Transaction *t) -> std::pair<Page *, bool>;
+  auto InsertToParent(BPlusTreePage *raw_page, const KeyType &key, Transaction *t) -> void;
+  auto Split(BPlusTreePage *raw_old, Transaction *t) -> std::pair<BPlusTreePage *, KeyType>;
+  auto RedistributeAndMerge(BPlusTreePage *old, Transaction *t) -> bool;
+  auto LockAndSafe(Page *page, OPT opt) -> bool;
+  auto UnLockAll(Transaction *t, OPT opt, bool &root) -> void;
 
- private:
+  // private:
   void UpdateRootPageId(int insert_record = 0);
 
   /* Debug Routines for FREE!! */

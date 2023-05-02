@@ -52,7 +52,7 @@ class BPlusTreePage {
   void SetMaxSize(const int &max_size, BufferPoolManager *buffer_pool_manager_ = nullptr);
   auto GetMinSize() const -> int;
   auto GetParentPageId() const -> page_id_t;
-  void SetParentPageId(const page_id_t &parent_page_id, BufferPoolManager *buffer_pool_manager_ = nullptr);
+  void SetParentPageId(page_id_t parent_page_id, BufferPoolManager *buffer_pool_manager_ = nullptr);
   auto GetPageId() const -> page_id_t;
   void SetPageId(const page_id_t &page_id, BufferPoolManager *buffer_pool_manager_ = nullptr);
   void SetLSN(const lsn_t &lsn = INVALID_LSN, BufferPoolManager *buffer_pool_manager_ = nullptr);

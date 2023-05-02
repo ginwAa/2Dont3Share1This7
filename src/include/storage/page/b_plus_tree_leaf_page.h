@@ -54,7 +54,6 @@ class BPlusTreeLeafPage : public BPlusTreePage {
   auto ValueAt(const int &index) const -> ValueType;
   void SetValueAt(const int &index, const ValueType &val);
   auto Insert(const KeyType &key, const ValueType &val, const KeyComparator &comparator) -> bool;
-  auto LowerBound(const KeyType &key, const KeyComparator &comparator) -> int;
   auto UpperBound(const KeyType &key, const KeyComparator &comparator) -> int;
   void MoveAllToLeft(BPlusTreeLeafPage *dst_page);
   void MoveHalfTo(BPlusTreeLeafPage *dst_page, bool side);
