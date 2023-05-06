@@ -19,15 +19,7 @@ INDEXITERATOR_TYPE::IndexIterator(BufferPoolManager *bpm, B_PLUS_TREE_LEAF_PAGE_
     : bpm_(bpm), page_(page), index_(i) {}
 
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::~IndexIterator() {
-  if (page_ == nullptr) {
-    return;
-  }
-  auto raw = bpm_->FetchPage(page_->GetPageId());
-  raw->RUnlatch();
-  bpm_->UnpinPage(page_->GetPageId(), false);
-  bpm_->UnpinPage(page_->GetPageId(), false);
-}  // NOLINT
+INDEXITERATOR_TYPE::~IndexIterator() {}  // NOLINT
 
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::IsEnd() -> bool {
@@ -48,10 +40,6 @@ auto INDEXITERATOR_TYPE::operator++() -> INDEXITERATOR_TYPE & {
   }
   if ((page_->GetSize() == index_ + 1) && (page_->GetNextPageId() != INVALID_PAGE_ID)) {
     auto nxt_raw = bpm_->FetchPage(page_->GetNextPageId());
-    nxt_raw->RLatch();
-    auto raw = bpm_->FetchPage(page_->GetPageId());
-    raw->RUnlatch();
-    bpm_->UnpinPage(page_->GetPageId(), false);
     auto nxt = reinterpret_cast<B_PLUS_TREE_LEAF_PAGE_TYPE *>(nxt_raw->GetData());
     bpm_->UnpinPage(page_->GetPageId(), false);
     index_ = 0;

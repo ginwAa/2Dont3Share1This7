@@ -473,6 +473,7 @@ auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
     buffer_pool_manager_->UnpinPage(page->GetPageId(), false);
     node = reinterpret_cast<BPlusTreePage *>(raw->GetData());
   }
+  raw->RUnlatch();
   return IndexIterator(buffer_pool_manager_, reinterpret_cast<B_PLUS_TREE_LEAF_PAGE_TYPE *>(node), 0);
 }
 
@@ -509,6 +510,7 @@ auto BPLUSTREE_TYPE::Begin(const KeyType &key) -> INDEXITERATOR_TYPE {
   if (comparator_(reinterpret_cast<B_PLUS_TREE_LEAF_PAGE_TYPE *>(node)->KeyAt(x), key) != 0) {
     BUSTUB_ASSERT(0, "Begin key not found");
   }
+  raw->RUnlatch();
   return IndexIterator(buffer_pool_manager_, reinterpret_cast<B_PLUS_TREE_LEAF_PAGE_TYPE *>(node), x);
 }
 
@@ -539,6 +541,7 @@ auto BPLUSTREE_TYPE::End() -> INDEXITERATOR_TYPE {
     buffer_pool_manager_->UnpinPage(page->GetPageId(), false);
     node = reinterpret_cast<BPlusTreePage *>(raw->GetData());
   }
+  raw->RUnlatch();
   return IndexIterator(buffer_pool_manager_, reinterpret_cast<B_PLUS_TREE_LEAF_PAGE_TYPE *>(node), node->GetSize());
 }
 
