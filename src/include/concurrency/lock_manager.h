@@ -300,7 +300,7 @@ class LockManager {
 
   auto LockCheck(Transaction *txn, LockMode lock_mode) -> void;
 
-  auto UpgradeCheck(Transaction *txn, LockMode lock_mode, LockMode pre_mode) -> bool;
+  auto UpgradeCheck(LockMode lock_mode, LockMode pre_mode) -> bool;
 
   auto UpdateTable(Transaction *txn, const std::shared_ptr<LockRequest> &req, bool insert) -> void;
 
