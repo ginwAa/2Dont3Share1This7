@@ -311,6 +311,7 @@ class LockManager {
   auto ShrinkDetect(Transaction *txn, const std::shared_ptr<LockRequest> &req) -> void;
 
   auto Dfs(txn_id_t u, txn_id_t &t, txn_id_t &mx) -> void;
+
  private:
   /** Fall 2022 */
   /** Structure that holds lock requests for a given table oid */

@@ -23,6 +23,14 @@ InsertExecutor::InsertExecutor(ExecutorContext *exec_ctx, const InsertPlanNode *
 void InsertExecutor::Init() {
   child_executor_->Init();
   table_info_ = exec_ctx_->GetCatalog()->GetTable(plan_->table_oid_);
+  try {
+    if (!exec_ctx_->GetLockManager()->LockTable(exec_ctx_->GetTransaction(), LockManager::LockMode::INTENTION_EXCLUSIVE,
+                                                table_info_->oid_)) {
+      throw ExecutionException("insert table lock failed");
+    }
+  } catch (TransactionAbortException e) {
+    throw ExecutionException("insert table lock failed" + e.GetInfo());
+  }
   indexes_ = exec_ctx_->GetCatalog()->GetTableIndexes(table_info_->name_);
 }
 
@@ -35,6 +43,15 @@ auto InsertExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   int cnt = 0;
   while (child_executor_->Next(&tup, &emit_rid)) {
     if (table_info_->table_->InsertTuple(tup, rid, exec_ctx_->GetTransaction())) {
+      try {
+        if (!exec_ctx_->GetLockManager()->LockRow(exec_ctx_->GetTransaction(), LockManager::LockMode::EXCLUSIVE,
+                                                  table_info_->oid_, *rid)) {
+          throw ExecutionException("insert row lock failed");
+        }
+      } catch (TransactionAbortException e) {
+        throw ExecutionException("insert row lock failed" + e.GetInfo());
+      }
+
       for (auto &index : indexes_) {
         auto key = tup.KeyFromTuple(table_info_->schema_, index->key_schema_, index->index_->GetKeyAttrs());
         index->index_->InsertEntry(key, *rid, this->GetExecutorContext()->GetTransaction());

@@ -23,6 +23,14 @@ DeleteExecutor::DeleteExecutor(ExecutorContext *exec_ctx, const DeletePlanNode *
 void DeleteExecutor::Init() {
   child_executor_->Init();
   table_info_ = exec_ctx_->GetCatalog()->GetTable(plan_->table_oid_);
+  try {
+    if (!exec_ctx_->GetLockManager()->LockTable(exec_ctx_->GetTransaction(), LockManager::LockMode::INTENTION_EXCLUSIVE,
+                                                table_info_->oid_)) {
+      throw ExecutionException("delete table lock failed");
+    }
+  } catch (TransactionAbortException e) {
+    throw ExecutionException("delete table lock failed" + e.GetInfo());
+  }
   indexes_ = exec_ctx_->GetCatalog()->GetTableIndexes(table_info_->name_);
 }
 
@@ -34,6 +42,14 @@ auto DeleteExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   RID r;
   int cnt = 0;
   while (child_executor_->Next(&tup, &r)) {
+    try {
+      if (!exec_ctx_->GetLockManager()->LockRow(exec_ctx_->GetTransaction(), LockManager::LockMode::EXCLUSIVE,
+                                                table_info_->oid_, r)) {
+        throw ExecutionException("delete row lock failed");
+      }
+    } catch (TransactionAbortException e) {
+      throw ExecutionException("delete row lock failed" + e.GetInfo());
+    }
     if (table_info_->table_->MarkDelete(r, this->GetExecutorContext()->GetTransaction())) {
       for (auto &index : indexes_) {
         auto key = tup.KeyFromTuple(table_info_->schema_, index->key_schema_, index->index_->GetKeyAttrs());

@@ -108,8 +108,8 @@ auto LockManager::UpdateRow(Transaction *txn, const std::shared_ptr<LockRequest>
 auto LockManager::Compatible(const std::shared_ptr<LockRequest> &req, const std::shared_ptr<LockRequestQueue> &que)
     -> bool {
   for (const auto &has : que->request_queue_) {
-    if (has.get() == req.get()) {
-      return true;
+    if (!has->granted_) {
+      return has.get() == req.get();
     }
     switch (req->lock_mode_) {
       case LockMode::SHARED:
@@ -137,7 +137,7 @@ auto LockManager::Compatible(const std::shared_ptr<LockRequest> &req, const std:
         break;
     }
   }
-  BUSTUB_ASSERT(0, "UNREACHABLE IN DESIGNED!");
+  return false;
 }
 
 auto LockManager::ShrinkDetect(Transaction *txn, const std::shared_ptr<LockRequest> &req) -> void {
@@ -188,12 +188,17 @@ auto LockManager::LockTable(Transaction *txn, LockMode lock_mode, const table_oi
     break;
   }
   auto new_req = std::make_shared<LockRequest>(txn->GetTransactionId(), lock_mode, oid);
-  if (upgrade && !lock_request_queue->request_queue_.empty()) {
+  if (upgrade) {
+    bool done = false;
     for (auto it = lock_request_queue->request_queue_.begin(); it != lock_request_queue->request_queue_.end(); ++it) {
       if (!(*it)->granted_) {
+        done = true;
         lock_request_queue->request_queue_.insert(it, new_req);
         break;
       }
+    }
+    if (!done) {
+      lock_request_queue->request_queue_.emplace_back(new_req);
     }
     lock_request_queue->upgrading_ = txn->GetTransactionId();
   } else {
@@ -273,7 +278,7 @@ auto LockManager::LockRow(Transaction *txn, LockMode lock_mode, const table_oid_
   lock_request_queue->latch_.lock();
   row_lock_map_latch_.unlock();
   bool upgrade = false;
-  for (const auto& req : lock_request_queue->request_queue_) {
+  for (const auto &req : lock_request_queue->request_queue_) {
     if (req->txn_id_ != txn->GetTransactionId()) {
       continue;
     }
@@ -291,7 +296,6 @@ auto LockManager::LockRow(Transaction *txn, LockMode lock_mode, const table_oid_
       txn->SetState(TransactionState::ABORTED);
       throw TransactionAbortException(txn->GetTransactionId(), AbortReason::INCOMPATIBLE_UPGRADE);
     }
-
     UpdateRow(txn, req, false);
     lock_request_queue->request_queue_.remove(req);
     upgrade = true;
@@ -299,12 +303,17 @@ auto LockManager::LockRow(Transaction *txn, LockMode lock_mode, const table_oid_
   }
 
   auto new_req = std::make_shared<LockRequest>(txn->GetTransactionId(), lock_mode, oid, rid);
-  if (upgrade && !lock_request_queue->request_queue_.empty()) {
+  if (upgrade) {
+    bool done = false;
     for (auto it = lock_request_queue->request_queue_.begin(); it != lock_request_queue->request_queue_.end(); ++it) {
       if (!(*it)->granted_) {
+        done = true;
         lock_request_queue->request_queue_.insert(it, new_req);
         break;
       }
+    }
+    if (!done) {
+      lock_request_queue->request_queue_.emplace_back(new_req);
     }
     lock_request_queue->upgrading_ = txn->GetTransactionId();
   } else {
@@ -343,7 +352,7 @@ auto LockManager::UnlockRow(Transaction *txn, const table_oid_t &oid, const RID 
   auto lock_request_queue = row_lock_map_[rid];
   lock_request_queue->latch_.lock();
   row_lock_map_latch_.unlock();
-  for (const auto& req : lock_request_queue->request_queue_) {
+  for (const auto &req : lock_request_queue->request_queue_) {
     if (!req->granted_ || req->txn_id_ != txn->GetTransactionId()) {
       continue;
     }
@@ -382,7 +391,7 @@ void LockManager::RemoveEdge(txn_id_t t1, txn_id_t t2) {
 auto LockManager::HasCycle(txn_id_t *txn_id) -> bool {
   txn_id_t t;
   *txn_id = t = INVALID_TXN_ID;
-  for (const auto& u : nodes_) {
+  for (const auto &u : nodes_) {
     if (acyclic_.find(u) != acyclic_.end()) {
       continue;
     }
@@ -397,8 +406,8 @@ auto LockManager::HasCycle(txn_id_t *txn_id) -> bool {
 
 auto LockManager::GetEdgeList() -> std::vector<std::pair<txn_id_t, txn_id_t>> {
   std::vector<std::pair<txn_id_t, txn_id_t>> edges;
-  for (const auto& [u, g] : waits_for_) {
-    for (const auto& v : g) {
+  for (const auto &[u, g] : waits_for_) {
+    for (const auto &v : g) {
       edges.emplace_back(u, v);
     }
   }
@@ -477,7 +486,7 @@ void LockManager::RunCycleDetection() {
 
 void LockManager::Dfs(txn_id_t u, txn_id_t &t, txn_id_t &mx) {
   mark_.emplace(u);
-  for (const auto& v : waits_for_[u]) {
+  for (const auto &v : waits_for_[u]) {
     if (acyclic_.find(v) == acyclic_.end()) {
       if (mark_.find(v) != mark_.end()) {
         t = v;
