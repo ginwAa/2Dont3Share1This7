@@ -44,27 +44,22 @@ class BPlusTreePage {
  public:
   auto IsLeafPage() const -> bool;
   auto IsRootPage() const -> bool;
-  void SetPageType(IndexPageType page_type);
-
+  void SetPageType(const IndexPageType &page_type);
   auto GetSize() const -> int;
-  void SetSize(int size);
+  void SetSize(const int &size);
   void IncreaseSize(int amount);
-
   auto GetMaxSize() const -> int;
-  void SetMaxSize(int max_size);
+  void SetMaxSize(const int &max_size);
   auto GetMinSize() const -> int;
-
   auto GetParentPageId() const -> page_id_t;
   void SetParentPageId(page_id_t parent_page_id);
-
   auto GetPageId() const -> page_id_t;
-  void SetPageId(page_id_t page_id);
-
-  void SetLSN(lsn_t lsn = INVALID_LSN);
+  void SetPageId(const page_id_t &page_id);
+  void SetLSN(const lsn_t &lsn = INVALID_LSN);
 
  private:
   // member variable, attributes that both internal and leaf page share
-  IndexPageType page_type_ __attribute__((__unused__));
+  IndexPageType page_type_;
   lsn_t lsn_ __attribute__((__unused__));
   int size_ __attribute__((__unused__));
   int max_size_ __attribute__((__unused__));

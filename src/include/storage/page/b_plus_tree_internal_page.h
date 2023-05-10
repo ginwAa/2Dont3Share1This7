@@ -11,7 +11,9 @@
 #pragma once
 
 #include <queue>
+#include <utility>
 
+#include "storage/page/b_plus_tree_leaf_page.h"
 #include "storage/page/b_plus_tree_page.h"
 
 namespace bustub {
@@ -36,11 +38,21 @@ INDEX_TEMPLATE_ARGUMENTS
 class BPlusTreeInternalPage : public BPlusTreePage {
  public:
   // must call initialize method after "create" a new node
-  void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = INTERNAL_PAGE_SIZE);
+  void Init(const page_id_t &page_id, page_id_t parent_id = INVALID_PAGE_ID, const int &max_size = INTERNAL_PAGE_SIZE);
 
-  auto KeyAt(int index) const -> KeyType;
-  void SetKeyAt(int index, const KeyType &key);
-  auto ValueAt(int index) const -> ValueType;
+  auto KeyAt(const int &index) const -> KeyType;
+  void SetKeyAt(const int &index, const KeyType &key);
+  auto ValueAt(const int &index) const -> ValueType;
+  void SetValueAt(const int &index, const ValueType &val);
+  auto Insert(const KeyType &key, const ValueType &val, const KeyComparator &comparator, BufferPoolManager *bpm)
+      -> bool;
+  auto UpperBound(const KeyType &key, const KeyComparator &comparator) -> int;
+  auto Remove(const KeyType &key, BufferPoolManager *bpm, const KeyComparator &comparator) -> bool;
+  void MoveDataFrom(std::pair<KeyType, ValueType> *items, int size, bool side, BufferPoolManager *bpm,
+                    const KeyComparator &comparator);
+  void MoveAllToLeft(BPlusTreeInternalPage *dst_page, BufferPoolManager *bpm, const KeyComparator &comparator);
+  void MoveHalfTo(BPlusTreeInternalPage *dst_page, bool side, BufferPoolManager *bpm, const KeyComparator &comparator);
+  void Generate(const ValueType &left, const KeyType &rhs, const ValueType &right, BufferPoolManager *bpm);
 
  private:
   // Flexible array member for page data.

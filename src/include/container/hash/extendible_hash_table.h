@@ -159,7 +159,7 @@ class ExtendibleHashTable : public HashTable<K, V> {
 
    private:
     // TODO(student): You may add additional private members and helper functions
-    size_t size_;
+    const size_t size_;
     int depth_;
     std::list<std::pair<K, V>> list_;
   };
@@ -168,9 +168,9 @@ class ExtendibleHashTable : public HashTable<K, V> {
   // TODO(student): You may add additional private members and helper functions and remove the ones
   // you don't need.
 
-  int global_depth_;    // The global depth of the directory
-  size_t bucket_size_;  // The size of a bucket
-  int num_buckets_;     // The number of buckets in the hash table
+  int global_depth_{0};  // The global depth of the directory
+  size_t bucket_size_;   // The size of a bucket
+  int num_buckets_{1};   // The number of buckets in the hash table
   mutable std::mutex latch_;
   std::vector<std::shared_ptr<Bucket>> dir_;  // The directory of the hash table
 
@@ -180,8 +180,7 @@ class ExtendibleHashTable : public HashTable<K, V> {
    * @brief Redistribute the kv pairs in a full bucket.
    * @param bucket The bucket to be redistributed.
    */
-  auto RedistributeBucket(std::shared_ptr<Bucket> bucket) -> void;
-
+  auto RedistributeBucket(std::shared_ptr<Bucket> bucket, const uint64_t &p) -> void;
   /*****************************************************************
    * Must acquire latch_ first before calling the below functions. *
    *****************************************************************/

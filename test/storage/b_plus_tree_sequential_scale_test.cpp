@@ -15,6 +15,7 @@
 #include <random>
 
 #include "buffer/buffer_pool_manager.h"
+#include "buffer/buffer_pool_manager_instance.h"
 #include "gtest/gtest.h"
 #include "storage/disk/disk_manager_memory.h"
 #include "storage/index/b_plus_tree.h"
@@ -27,13 +28,13 @@ using bustub::DiskManagerUnlimitedMemory;
 /**
  * This test should be passing with your Checkpoint 1 submission.
  */
-TEST(BPlusTreeTests, DISABLED_ScaleTest) {  // NOLINT
+TEST(BPlusTreeTests, ScaleTest) {  // NOLINT
   // create KeyComparator and index schema
   auto key_schema = ParseCreateStatement("a bigint");
   GenericComparator<8> comparator(key_schema.get());
 
   auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(30, disk_manager.get());
+  auto *bpm = new BufferPoolManagerInstance(100, disk_manager.get());
 
   // create and fetch header_page
   page_id_t page_id;
@@ -41,7 +42,7 @@ TEST(BPlusTreeTests, DISABLED_ScaleTest) {  // NOLINT
   (void)header_page;
 
   // create b+ tree
-  BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree("foo_pk", page_id, bpm, comparator, 2, 3);
+  BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree("foo_pk", bpm, comparator);
   GenericKey<8> index_key;
   RID rid;
   // create transaction
@@ -60,19 +61,46 @@ TEST(BPlusTreeTests, DISABLED_ScaleTest) {  // NOLINT
     int64_t value = key & 0xFFFFFFFF;
     rid.Set(static_cast<int32_t>(key >> 32), value);
     index_key.SetFromInteger(key);
-    tree.Insert(index_key, rid, transaction);
+
+    assert(tree.Insert(index_key, rid, transaction));
   }
   std::vector<RID> rids;
-  for (auto key : keys) {
-    rids.clear();
-    index_key.SetFromInteger(key);
-    tree.GetValue(index_key, &rids);
-    ASSERT_EQ(rids.size(), 1);
-
-    int64_t value = key & 0xFFFFFFFF;
-    ASSERT_EQ(rids[0].GetSlotNum(), value);
+  for (size_t i = 0; i < keys.size() / 2; ++i) {
+    index_key.SetFromInteger(keys[i]);
+    tree.Remove(index_key, transaction);
   }
 
+  for (size_t i = 0; i < keys.size() / 2; ++i) {
+    int64_t value = keys[i] & 0xFFFFFFFF;
+    rid.Set(static_cast<int32_t>(keys[i] >> 32), value);
+    index_key.SetFromInteger(keys[i]);
+
+    assert(tree.Insert(index_key, rid, transaction));
+  }
+  for (size_t i = 0; i < keys.size() / 2; ++i) {
+    index_key.SetFromInteger(keys[i]);
+    tree.Remove(index_key, transaction);
+  }
+  for (size_t i = 0; i < keys.size(); ++i) {
+    rids.clear();
+    index_key.SetFromInteger(keys[i]);
+    tree.GetValue(index_key, &rids);
+    if (i >= keys.size() / 2) {
+      ASSERT_EQ(rids.size(), 1);
+
+      int64_t value = keys[i] & 0xFFFFFFFF;
+      ASSERT_EQ(rids[0].GetSlotNum(), value);
+    } else {
+      ASSERT_EQ(rids.size(), 0);
+    }
+  }
+  auto insert_keys = std::vector(keys.begin() + keys.size() / 2, keys.end());
+  std::sort(insert_keys.begin(), insert_keys.end());
+  int64_t i = 0;
+  for (auto it = tree.Begin(); it != tree.End(); ++it) {
+    ASSERT_EQ((*it).second.GetSlotNum(), insert_keys[i] & 0xFFFFFFFF);
+    ++i;
+  }
   bpm->UnpinPage(HEADER_PAGE_ID, true);
   delete transaction;
   delete bpm;

@@ -17,6 +17,7 @@
 #include <list>
 #include <memory>
 #include <mutex>  // NOLINT
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -64,7 +65,7 @@ class LockManager {
   class LockRequestQueue {
    public:
     /** List of lock requests for the same resource (table or row) */
-    std::list<LockRequest *> request_queue_;
+    std::list<std::shared_ptr<LockRequest>> request_queue_;
     /** For notifying blocked transactions on this rid */
     std::condition_variable cv_;
     /** txn_id of an upgrading transaction (if any) */
@@ -297,6 +298,20 @@ class LockManager {
    */
   auto RunCycleDetection() -> void;
 
+  auto LockCheck(Transaction *txn, LockMode lock_mode) -> void;
+
+  auto UpgradeCheck(LockMode lock_mode, LockMode pre_mode) -> bool;
+
+  auto UpdateTable(Transaction *txn, const std::shared_ptr<LockRequest> &req, bool insert) -> void;
+
+  auto UpdateRow(Transaction *txn, const std::shared_ptr<LockRequest> &req, bool insert) -> void;
+
+  auto Compatible(const std::shared_ptr<LockRequest> &req, const std::shared_ptr<LockRequestQueue> &que) -> bool;
+
+  auto ShrinkDetect(Transaction *txn, const std::shared_ptr<LockRequest> &req) -> void;
+
+  auto Dfs(txn_id_t u, txn_id_t &t, txn_id_t &mx) -> void;
+
  private:
   /** Fall 2022 */
   /** Structure that holds lock requests for a given table oid */
@@ -314,6 +329,10 @@ class LockManager {
   /** Waits-for graph representation. */
   std::unordered_map<txn_id_t, std::vector<txn_id_t>> waits_for_;
   std::mutex waits_for_latch_;
+
+  std::set<txn_id_t> nodes_;
+  std::set<txn_id_t> acyclic_;
+  std::set<txn_id_t> mark_;
 };
 
 }  // namespace bustub
