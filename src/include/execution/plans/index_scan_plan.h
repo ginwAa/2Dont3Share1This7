@@ -30,7 +30,7 @@ class IndexScanPlanNode : public AbstractPlanNode {
    * @param output the output format of this scan plan node
    * @param table_oid the identifier of table to be scanned
    */
-  IndexScanPlanNode(SchemaRef output, index_oid_t index_oid)
+  IndexScanPlanNode(SchemaRef output, index_oid_t index_oid, AbstractExpressionRef filter_predicate = nullptr)
       : AbstractPlanNode(std::move(output), {}), index_oid_(index_oid) {}
 
   auto GetType() const -> PlanType override { return PlanType::IndexScan; }

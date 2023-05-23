@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 
 #include "common/rid.h"
@@ -45,8 +44,8 @@ class IndexScanExecutor : public AbstractExecutor {
  private:
   /** The index scan plan node to be executed. */
   const IndexScanPlanNode *plan_;
-  IndexInfo *index_info_;
-  TableInfo *table_info_;
+  const IndexInfo *index_info_;
+  const TableInfo *table_info_;
   BPlusTreeIndexForOneIntegerColumn *index_;
   BPlusTreeIndexIteratorForOneIntegerColumn iter_;
 };
