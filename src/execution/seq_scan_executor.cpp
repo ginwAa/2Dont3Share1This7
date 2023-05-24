@@ -20,8 +20,8 @@ SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx, const SeqScanPlanNod
 void SeqScanExecutor::Init() {
   if (exec_ctx_->GetTransaction()->GetIsolationLevel() != IsolationLevel::READ_UNCOMMITTED) {
     try {
-      bool locked = exec_ctx_->GetLockManager()->LockTable(
-          exec_ctx_->GetTransaction(), LockManager::LockMode::INTENTION_SHARED, table_info_->oid_);
+      bool locked = exec_ctx_->GetLockManager()->LockTable(exec_ctx_->GetTransaction(),
+                                                           LockManager::LockMode::INTENTION_SHARED, table_info_->oid_);
       if (!locked) {
         throw ExecutionException("SeqScan Executor Get Table Lock Failed");
       }
@@ -47,7 +47,7 @@ auto SeqScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
   if (exec_ctx_->GetTransaction()->GetIsolationLevel() != IsolationLevel::READ_UNCOMMITTED) {
     try {
       bool locked = exec_ctx_->GetLockManager()->LockRow(exec_ctx_->GetTransaction(), LockManager::LockMode::SHARED,
-                                                            table_info_->oid_, iter_->GetRid());
+                                                         table_info_->oid_, iter_->GetRid());
       if (!locked) {
         throw ExecutionException("SeqScan Executor Get Table Lock Failed");
       }
